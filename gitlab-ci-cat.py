@@ -1,14 +1,26 @@
 #!/usr/bin/env python3
+import argparse
 import re
 import shlex
 import sys
 
 import yaml
 
-gitlab_ci = yaml.safe_load(sys.stdin)
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "gitlab_ci_file",
+    help='path to GitLab CI file (e.g., ".gitlab-ci.yaml", ".gitlab-ci.yml")',
+)
+parser.add_argument(
+    "job", nargs="?", help="job to print; by default, all jobs are printed"
+)
+args = parser.parse_args()
+
+gitlab_ci = yaml.safe_load(open(args.gitlab_ci_file))
 for name, job in gitlab_ci.items():
     if "script" in job:
-        if len(sys.argv) <= 1 or name == sys.argv[1]:
+        if args.job is None or name == args.job:
+            print(f"# Job: {name}")
             # https://docs.gitlab.com/ee/ci/runners/hosted_runners/linux.html#container-images
             image = job.get("image") or gitlab_ci.get("image") or "ruby:3.1"
             if not re.search(r"^.*\..*[^/]", image):
