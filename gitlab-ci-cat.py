@@ -6,10 +6,12 @@ import sys
 
 import yaml
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     "gitlab_ci_file",
-    help='path to GitLab CI file (e.g., ".gitlab-ci.yaml", ".gitlab-ci.yml")',
+    nargs="?",
+    default=".gitlab-ci.yml",
+    help="path to GitLab CI file",
 )
 parser.add_argument(
     "job", nargs="?", help="job to print; by default, all jobs are printed"
