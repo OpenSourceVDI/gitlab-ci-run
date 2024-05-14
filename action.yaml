@@ -1,0 +1,8 @@
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        "$action_path/gitlab-ci-cat.py" -e
+      env:
+        action_path: ${{ github.action_path }}
