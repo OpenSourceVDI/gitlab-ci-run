@@ -28,7 +28,10 @@ job_nr = 0
 for name, job in gitlab_ci.items():
     if "script" in job:
         if args.job is None or name == args.job:
-            script = "\n".join(job["script"])
+            script = "\n".join(
+                job.get("before_script", gitlab_ci.get("before_script", []))
+                + job["script"]
+            )
             if job_nr > 0:
                 print()
             print(f"# Job: {name}")
