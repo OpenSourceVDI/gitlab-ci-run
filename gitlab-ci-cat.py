@@ -24,10 +24,13 @@ parser.add_argument(
 args = parser.parse_args()
 
 gitlab_ci = yaml.safe_load(open(args.gitlab_ci_file))
+job_nr = 0
 for name, job in gitlab_ci.items():
     if "script" in job:
         if args.job is None or name == args.job:
             script = "\n".join(job["script"])
+            if job_nr > 0:
+                print()
             print(f"# Job: {name}")
             # https://docs.gitlab.com/ee/ci/runners/hosted_runners/linux.html#container-images
             image = job.get("image") or gitlab_ci.get("image") or "ruby:3.1"
@@ -40,3 +43,4 @@ for name, job in gitlab_ci.items():
             print(script)
             if args.exec:
                 os.execvp(cmd[0], cmd + ["sh", "-c", script])
+            job_nr += 1
