@@ -28,8 +28,11 @@ job_nr = 0
 for name, job in gitlab_ci.items():
     if "script" in job:
         if args.job is None or name == args.job:
+            variables = gitlab_ci.get("variables", {}) | job.get("variables", {})
+            exports = [shlex.join(["export", f"{k}={v}"]) for k, v in variables.items()]
             script = "\n".join(
-                job.get("before_script", gitlab_ci.get("before_script", []))
+                exports
+                + job.get("before_script", gitlab_ci.get("before_script", []))
                 + job["script"]
             )
             if job_nr > 0:
