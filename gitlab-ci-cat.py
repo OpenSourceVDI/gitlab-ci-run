@@ -44,9 +44,10 @@ for name, job in gitlab_ci.items():
             get_image = lambda obj: get_name(obj.get("image"))
             image = get_image(job) or get_image(gitlab_ci) or "ruby:3.1"
             if not re.search(r"^.*\..*[^/]", image):
+            if not re.search(r"^[^/]*\.[^/]*[^/]", image):
                 if not "/" in image:
                     image = f"library/{image}"
-                image = f"docker.io/{image}"
+                image = f"registry-1.docker.io/{image}"
             cmd = [args.runtime, "run", "-it", "-w", "/mnt", "-v", ".:/mnt", image]
             print("#", shlex.join(cmd))
             print(script)
