@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import os
 import re
 import shlex
@@ -39,18 +40,24 @@ for name, job in gitlab_ci.items():
                 print()
             print(f"# Job: {name}")
             # https://docs.gitlab.com/ee/ci/runners/hosted_runners/linux.html#container-images
-            # TODO: use image.entrypoint
-            get_name = lambda obj: isinstance(obj, dict) and obj.get("name") or obj
-            get_image = lambda obj: get_name(obj.get("image"))
-            image = get_image(job) or get_image(gitlab_ci) or "ruby:3.1"
-            if not re.search(r"^.*\..*[^/]", image):
+            image = job.get("image") or gitlab_ci.get("image") or "ruby:3.1"
+            entrypoint = None
+            if isinstance(image, dict):
+                entrypoint = image.get("entrypoint")
+                image = image.get("name")
+            if isinstance(entrypoint, list):
+                entrypoint = json.dumps(entrypoint)
             if not re.search(r"^[^/]*\.[^/]*[^/]", image):
                 if not "/" in image:
                     image = f"library/{image}"
                 image = f"registry-1.docker.io/{image}"
-            cmd = [args.runtime, "run", "-it", "-w", "/mnt", "-v", ".:/mnt", image]
+            cmd = (
+                [args.runtime, "run", "-it", "-w", "/mnt", "-v", ".:/mnt"]
+                + (["--entrypoint", entrypoint] if entrypoint else [])
+                + [image]
+            )
             print("#", shlex.join(cmd))
             print(script)
             if args.exec:
-                os.execvp(cmd[0], cmd + ["sh", "-c", script])
+                os.execvp(cmd[0], cmd + ([] if entrypoint else ["sh", "-c"]) + [script])
             job_nr += 1
