@@ -39,7 +39,10 @@ for name, job in gitlab_ci.items():
                 print()
             print(f"# Job: {name}")
             # https://docs.gitlab.com/ee/ci/runners/hosted_runners/linux.html#container-images
-            image = job.get("image") or gitlab_ci.get("image") or "ruby:3.1"
+            # TODO: use image.entrypoint
+            get_name = lambda obj: isinstance(obj, dict) and obj.get("name") or obj
+            get_image = lambda obj: get_name(obj.get("image"))
+            image = get_image(job) or get_image(gitlab_ci) or "ruby:3.1"
             if not re.search(r"^.*\..*[^/]", image):
                 if not "/" in image:
                     image = f"library/{image}"
